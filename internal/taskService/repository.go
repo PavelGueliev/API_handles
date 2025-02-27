@@ -19,7 +19,7 @@ type taskRepository struct {
 	db *gorm.DB
 }
 
-func newTaskRepository(db *gorm.DB) *taskRepository {
+func NewTaskRepository(db *gorm.DB) *taskRepository {
 	return &taskRepository{db: db}
 }
 
@@ -40,7 +40,7 @@ func (r *taskRepository) GetAllTasks() ([]Task, error) {
 
 func (r *taskRepository) UpdateTaskById(id uint, updatedTask Task) (Task, error) {
 	var task Task
-	err := r.db.Model(&task).Where("id = ?", id)
+	err := r.db.First(&task, id)
 	if err.Error != nil {
 		return task, err.Error
 	}
