@@ -5,12 +5,12 @@ import (
 	"1/internal/handlers"
 	"1/internal/taskService"
 	"github.com/gorilla/mux"
+	_ "gorm.io/driver/postgres"
 	"net/http"
 )
 
 func main() {
 	database.InitDB()
-	database.DB.AutoMigrate(&taskService.Task{})
 
 	repo := taskService.NewTaskRepository(database.DB)
 	service := taskService.NewService(repo)
