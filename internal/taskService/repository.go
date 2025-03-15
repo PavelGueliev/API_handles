@@ -55,6 +55,7 @@ func (r *taskRepository) UpdateTaskById(id uint, updatedTask Task) (Task, error)
 
 func (r *taskRepository) DeleteTaskById(id uint) error {
 	var task Task
+
 	err := r.db.Model(&task).Where("id = ?", id).Delete(&task).Error
 	if err != nil {
 		return err

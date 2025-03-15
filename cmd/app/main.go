@@ -4,7 +4,9 @@ import (
 	"1/internal/database"
 	"1/internal/handlers"
 	"1/internal/taskService"
+	"1/internal/userService"
 	"1/internal/web/tasks"
+	"1/internal/web/users"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"log"
@@ -13,11 +15,14 @@ import (
 func main() {
 	database.InitDB()
 
-	repo := taskService.NewTaskRepository(database.DB)
-	service := taskService.NewService(repo)
+	taskRepo := taskService.NewTaskRepository(database.DB)
+	userRepo := userService.NewUserRepository(database.DB)
 
-	handler := handlers.NewHandler(service)
+	taskService := taskService.NewService(taskRepo)
+	userService := userService.NewUserService(userRepo)
 
+	taskHandlers := handlers.NewTaskHandler(taskService)
+	userHandlers := handlers.NewUserHandler(userService)
 	// Инициализируем echo
 	e := echo.New()
 
@@ -26,8 +31,11 @@ func main() {
 	e.Use(middleware.Recover())
 
 	// Прикол для работы в echo. Передаем и регистрируем хендлер в echo
-	strictHandler := tasks.NewStrictHandler(handler, nil) // тут будет ошибка
-	tasks.RegisterHandlers(e, strictHandler)
+	strictTaskHandler := tasks.NewStrictHandler(taskHandlers, nil) // Правильный handler для задач
+	strictUserHandler := users.NewStrictHandler(userHandlers, nil) // Новый handler для пользователей
+
+	tasks.RegisterHandlers(e, strictTaskHandler) // Регистрируем `tasks`
+	users.RegisterHandlers(e, strictUserHandler) // Регистрируем `users`
 
 	if err := e.Start(":8080"); err != nil {
 		log.Fatalf("failed to start with err: %v", err)

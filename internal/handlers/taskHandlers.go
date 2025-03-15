@@ -58,7 +58,7 @@ func (h *Handler) PostTasks(_ context.Context, request tasks.PostTasksRequestObj
 	return response, nil
 }
 
-func NewHandler(service *taskService.TaskService) *Handler {
+func NewTaskHandler(service *taskService.TaskService) *Handler {
 	return &Handler{Service: service}
 }
 
@@ -97,7 +97,7 @@ func (h *Handler) DeleteTasks(_ context.Context, request tasks.DeleteTasksReques
 	// Вызываем сервис для удаления
 	err := h.Service.DeleteTaskById(uint(id))
 	if err != nil {
-		return nil, err
+		return tasks.DeleteTasks404Response{}, err
 	}
 
 	// Успешное удаление - просто возвращаем пустой ответ (204 No Content)
