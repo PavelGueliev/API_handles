@@ -70,8 +70,9 @@ func (handler *UserHandler) PatchUsers(_ context.Context, request users.PatchUse
 		return nil, err
 	}
 	response := users.PatchUsers200JSONResponse{
-		Id:    &updatedUser.ID,
-		Email: &updatedUser.Email,
+		Id:       &updatedUser.ID,
+		Email:    &updatedUser.Email,
+		Password: &updatedUser.Password,
 	}
 	return response, err
 
