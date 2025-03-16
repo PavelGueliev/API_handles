@@ -21,7 +21,7 @@ func main() {
 	taskService := taskService.NewService(taskRepo)
 	userService := userService.NewUserService(userRepo)
 
-	taskHandlers := handlers.NewTaskHandler(taskService)
+	taskHandlers := handlers.NewTaskHandler(taskService, userService)
 	userHandlers := handlers.NewUserHandler(userService)
 	// Инициализируем echo
 	e := echo.New()

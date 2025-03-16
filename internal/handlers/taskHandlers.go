@@ -2,17 +2,20 @@ package handlers
 
 import (
 	"1/internal/taskService" // Импортируем наш сервис
+	"1/internal/userService"
 	"1/internal/web/tasks"
+	"fmt"
 	"golang.org/x/net/context"
 )
 
 type Handler struct {
-	Service *taskService.TaskService
+	TaskService *taskService.TaskService
+	UserService *userService.UserService
 }
 
 func (h *Handler) GetTasks(_ context.Context, _ tasks.GetTasksRequestObject) (tasks.GetTasksResponseObject, error) {
 	// Получение всех задач из сервиса
-	allTasks, err := h.Service.GetAllTasks()
+	allTasks, err := h.TaskService.GetAllTasks()
 	if err != nil {
 		return nil, err
 	}
@@ -27,6 +30,7 @@ func (h *Handler) GetTasks(_ context.Context, _ tasks.GetTasksRequestObject) (ta
 			Id:     &tsk.ID,
 			Task:   &tsk.Task,
 			IsDone: &tsk.IsDone,
+			UserId: &tsk.UserID,
 		}
 		response = append(response, task)
 	}
@@ -42,8 +46,9 @@ func (h *Handler) PostTasks(_ context.Context, request tasks.PostTasksRequestObj
 	taskToCreate := taskService.Task{
 		Task:   *taskRequest.Task,
 		IsDone: *taskRequest.IsDone,
+		UserID: *taskRequest.UserId,
 	}
-	createdTask, err := h.Service.CreateTask(taskToCreate)
+	createdTask, err := h.TaskService.CreateTask(taskToCreate)
 
 	if err != nil {
 		return nil, err
@@ -53,13 +58,15 @@ func (h *Handler) PostTasks(_ context.Context, request tasks.PostTasksRequestObj
 		Id:     &createdTask.ID,
 		Task:   &createdTask.Task,
 		IsDone: &createdTask.IsDone,
+		UserId: &createdTask.UserID,
 	}
 	// Просто возвращаем респонс!
 	return response, nil
 }
 
-func NewTaskHandler(service *taskService.TaskService) *Handler {
-	return &Handler{Service: service}
+func NewTaskHandler(taskservice *taskService.TaskService, userservice *userService.UserService) *Handler {
+	return &Handler{TaskService: taskservice,
+		UserService: userservice}
 }
 
 func (h *Handler) PatchTasks(_ context.Context, request tasks.PatchTasksRequestObject) (tasks.PatchTasksResponseObject, error) {
@@ -76,7 +83,7 @@ func (h *Handler) PatchTasks(_ context.Context, request tasks.PatchTasksRequestO
 	}
 
 	// Обновляем задачу через сервис
-	updatedTask, err := h.Service.UpdateTaskById(uint(id), updateData)
+	updatedTask, err := h.TaskService.UpdateTaskById(uint(id), updateData)
 	if err != nil {
 		return nil, err
 	}
@@ -95,11 +102,30 @@ func (h *Handler) DeleteTasks(_ context.Context, request tasks.DeleteTasksReques
 	id := request.Id
 
 	// Вызываем сервис для удаления
-	err := h.Service.DeleteTaskById(uint(id))
+	err := h.TaskService.DeleteTaskById(uint(id))
 	if err != nil {
 		return tasks.DeleteTasks404Response{}, err
 	}
 
 	// Успешное удаление - просто возвращаем пустой ответ (204 No Content)
 	return tasks.DeleteTasks204Response{}, nil
+}
+
+func (h *Handler) GetTasksByUserID(_ context.Context, request tasks.GetTasksByUserIDRequestObject) (tasks.GetTasksByUserIDResponseObject, error) {
+	id := uint(request.Id)
+
+	task, err := h.UserService.GetTasksForUser(id)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Printf("GetTasksByUserID id=%d\n", id)
+	response := tasks.GetTasksByUserID200JSONResponse{}
+	for _, tsk := range task {
+		response = append(response, tasks.Task{
+			Id:     &tsk.ID,
+			Task:   &tsk.Task,
+			IsDone: &tsk.IsDone,
+		})
+	}
+	return response, nil
 }

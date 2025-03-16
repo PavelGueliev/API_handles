@@ -1,5 +1,7 @@
 package userService
 
+import "1/internal/taskService"
+
 type UserService struct {
 	repo UserRepository
 }
@@ -16,4 +18,7 @@ func (us *UserService) DeleteUser(id uint) error {
 }
 func (us *UserService) GetAllUsers() ([]User, error) {
 	return us.repo.GetAllUsers()
+}
+func (us *UserService) GetTasksForUser(userID uint) ([]taskService.Task, error) {
+	return us.repo.GetTasksForUser(userID)
 }

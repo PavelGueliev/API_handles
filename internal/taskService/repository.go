@@ -1,6 +1,9 @@
 package taskService
 
-import "gorm.io/gorm"
+import (
+	"errors"
+	"gorm.io/gorm"
+)
 
 type TaskRepository interface {
 	// CreateTask - Передаем в функцию task типа Task из orm.go
@@ -25,6 +28,9 @@ func NewTaskRepository(db *gorm.DB) *taskRepository {
 
 // CreateTask (r *taskRepository) привязывает данную функцию к нашему репозиторию
 func (r *taskRepository) CreateTask(task Task) (Task, error) {
+	if task.UserID == 0 {
+		return Task{}, errors.New("user_id обязателен")
+	}
 	err := r.db.Create(&task).Error
 	if err != nil {
 		return Task{}, err
