@@ -84,7 +84,7 @@ paths:
                 $ref: "#/components/schemas/Task"
         "404":
           description: Task not found
-  /tasks/user/{id}:
+  /tasks/{id}/user:
     get:
       summary: Get all tasks for a user
       tags:
